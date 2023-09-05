@@ -1,0 +1,18 @@
+{
+  "name": "tallergraphql",
+  "version": "1.0.0",
+  "description": "Desarrollo taller de graphql",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yorman Alexander Carrillo M. Miguel Enrique Pedraza A.",
+  "license": "ISC",
+  "dependencies": {
+    "@apollo/server": "^4.9.3",
+    "graphql": "^16.8.0",
+    "mongoose": "7.5.0",
+    "mongoose-unique-validator": "4.0.0"
+  },
+  "type": "module"
+}
