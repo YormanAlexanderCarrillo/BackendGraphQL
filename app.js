@@ -20,10 +20,9 @@ type Country {
     alt: String
 }
 type Query {
-    findByName(name: String!): Country
     obtainAll: [Country]
+    findByIdDb(id: String!): Country
     obtainAllDb: [Country]
-    findId(id: String!): [Country]
 }
 type Mutation {
     addCountry(
@@ -35,7 +34,9 @@ type Mutation {
         coatOfArms: String!,
         flags: String!,
         alt: String!): Country
+
     deleteCountry(id: String!): Country
+
     modifyCountry(
         id: String!,
         nameCommon: String!,
@@ -50,31 +51,6 @@ type Mutation {
     }
 `;
 
-
-const findCountryByName = async (parent, args, contextValue, info) => {
-    //console.log(args);
-    if (args) {
-        const urlApi = `https://restcountries.com/v3.1/name/${args.name}`
-        //  console.log(urlApi);
-        const response = await fetch(urlApi);
-        const countryData = await response.json();
-        //  console.log(countryData[0])
-
-        const mappedCountry = {
-            nameCommon: countryData[0].name.common,
-            nameOfficial: countryData[0].name.official,
-            independent: countryData[0].independent,
-            capital: countryData[0].capital[0],
-            region: countryData[0].region,
-            coatOfArms: countryData[0].coatOfArms,
-            flags: countryData[0].flags.png,
-            alt: countryData[0].flags.alt
-        };
-        return mappedCountry;
-    }
-    return [];
-};
-
 const obtainAllCountry = async (parent, args, contextValue, info) => {
     const urlApi = `https://restcountries.com/v3.1/all`
     const response = await fetch(urlApi);
@@ -88,8 +64,8 @@ const obtainAllCountry = async (parent, args, contextValue, info) => {
             independent: countryData[i].independent,
             capital: countryData[i].capital && countryData[i].capital.length > 0 ? countryData[i].capital[0] : "N/A",
             region: countryData[i].region,
-            coatOfArms: countryData[i].coatOfArms.png,
-            flags: countryData[i].flags.png,
+            coatOfArms: countryData[i].coatOfArms.svg,
+            flags: countryData[i].flags.svg,
             alt: countryData[i].flags.alt
         }
         mappedCountries.push(mappedCountry)
@@ -98,55 +74,60 @@ const obtainAllCountry = async (parent, args, contextValue, info) => {
     return mappedCountries
 }
 
-const addCountrydb = (parent, args, contextValue, info) => {
+const findByIdDb= async (parent, args, contextValue, info) => {
+    //console.log(args);
+        const dataCountry = await mCountry.findById(args.id)
+    //console.log(dataCountry);
+        return dataCountry;
+};
+
+const addCountrydb = async(parent, args, contextValue, info) => {
     // console.log(args);
     const { nameCommon, nameOfficial, independent, capital, region, coatOfArms, flags, alt } = args
     //console.log(nameCommon, nameOfficial, independent, capital, region, coatOfArms, flags, alt);
     const country = new mCountry(args)
-    return country.save()
+    return  await country.save()
 }
 
-const obtainAllDb = () => {
-    return mCountry.find().exec();
+const obtainAllDb = async () => {
+    return  await mCountry.find()
 };
 
 const deleteCountry = (parent, args, contextValue, info) => {
     const id = args.id
     // console.log(args)
-    return mCountry.findByIdAndDelete(id).exec()
+    const response = mCountry.findByIdAndDelete(id).exec()
+    console.log(response);
+    return response
 }
 
-const modifyCountry = (parent, args, contextValue, info) => {
-    const id = args.id
-    console.log(args);
-    return mCountry.findByIdAndUpdate(id, args)
-}
-
-const findId = (parent, args, contextValue, info) => {
-   return  mCountry.findById(args.id, (err, country) => {
-        if (err) {
-            console.error(`Error al buscar por ID: ${err}`);
-            // Manejar el error adecuadamente
-        } else {
-            if (country) {
-                console.log('País encontrado:', country);
-                // Hacer algo con el país encontrado
-            } else {
-                console.log('No se encontró ningún país con ese ID.');
-                // Manejar la situación en la que no se encuentra el país
-            }
-        }
-    });
-    
+const modifyCountry = async (parent, args, contextValue, info) => {
+    const id = args.id;
+    //console.log(args);
+    try {
+        const updatedCountry = await mCountry.findByIdAndUpdate(id, {
+            nameCommon: args.nameCommon,
+            nameOfficial: args.nameOfficial,
+            independent: args.independent,
+            capital: args.capital,
+            region: args.region,
+            coatOfArms: args.coatOfArms,
+            flags : args.flags,
+            alt: args.alt
+        });
+      //  console.log(updatedCountry);
+        return updatedCountry
+    } catch (error) {
+        console.log(error.message)
+    }
 }
 
 
 const Resolvers = {
     Query: {
-        findByName: findCountryByName,
         obtainAll: obtainAllCountry,
         obtainAllDb: obtainAllDb,
-        findId: findId,
+        findByIdDb: findByIdDb
     },
     Mutation: {
         addCountry: addCountrydb,
