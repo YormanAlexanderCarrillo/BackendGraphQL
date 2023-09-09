@@ -8,25 +8,45 @@ import mCountry from "./models/country.js";
 
 // Esquemas
 const typeDefs = `
-  type Country {
-      _id: String
-      nameCommon: String
-      nameOfficial: String
-      independent: Boolean
-      capital:String
-      region: String
-      coatOfArms: String
-      flags: String
-      alt: String
-  }
-  type Query {
-      findByName(name: String!): Country
-      obtainAll: [Country]
-      obtainAllDb: [Country]
-  }
-  type Mutation {
-      addCountry(nameCommon: String!, nameOfficial: String!, independent: Boolean!, capital: String!, region: String!, coatOfArms: String!, flags: String!, alt: String!): Country
-      deleteCountry(id: String!): Country
+type Country {
+    _id: String
+    nameCommon: String
+    nameOfficial: String
+    independent: Boolean
+    capital:String
+    region: String
+    coatOfArms: String
+    flags: String
+    alt: String
+}
+type Query {
+    findByName(name: String!): Country
+    obtainAll: [Country]
+    obtainAllDb: [Country]
+    findId(id: String!): [Country]
+}
+type Mutation {
+    addCountry(
+        nameCommon: String!, 
+        nameOfficial: String!, 
+        independent: Boolean!, 
+        capital: String!,
+        region: String!, 
+        coatOfArms: String!,
+        flags: String!,
+        alt: String!): Country
+    deleteCountry(id: String!): Country
+    modifyCountry(
+        id: String!,
+        nameCommon: String!,
+        nameOfficial: String!, 
+        independent: Boolean!, 
+        capital: String!,
+        region: String!, 
+        coatOfArms: String!,
+        flags: String!,
+        alt: String!,
+        ): Country
     }
 `;
 
@@ -38,7 +58,7 @@ const findCountryByName = async (parent, args, contextValue, info) => {
         //  console.log(urlApi);
         const response = await fetch(urlApi);
         const countryData = await response.json();
-        console.log(countryData[0])
+        //  console.log(countryData[0])
 
         const mappedCountry = {
             nameCommon: countryData[0].name.common,
@@ -48,7 +68,7 @@ const findCountryByName = async (parent, args, contextValue, info) => {
             region: countryData[0].region,
             coatOfArms: countryData[0].coatOfArms,
             flags: countryData[0].flags.png,
-            alt : countryData[0].flags.alt
+            alt: countryData[0].flags.alt
         };
         return mappedCountry;
     }
@@ -60,9 +80,7 @@ const obtainAllCountry = async (parent, args, contextValue, info) => {
     const response = await fetch(urlApi);
     const countryData = await response.json();
     //console.log(countryData)
-
     const mappedCountries = []
-
     for (let i = 0; i < countryData.length; i++) {
         const mappedCountry = {
             nameCommon: countryData[i].name.common,
@@ -76,38 +94,64 @@ const obtainAllCountry = async (parent, args, contextValue, info) => {
         }
         mappedCountries.push(mappedCountry)
     }
-   //console.log(mappedCountries)
+    //console.log(mappedCountries)
     return mappedCountries
 }
 
 const addCountrydb = (parent, args, contextValue, info) => {
-    console.log(args);
-    const {nameCommon, nameOfficial, independent, capital, region, coatOfArms, flags, alt} = args
-   //console.log(nameCommon, nameOfficial, independent, capital, region, coatOfArms, flags, alt);
+    // console.log(args);
+    const { nameCommon, nameOfficial, independent, capital, region, coatOfArms, flags, alt } = args
+    //console.log(nameCommon, nameOfficial, independent, capital, region, coatOfArms, flags, alt);
     const country = new mCountry(args)
     return country.save()
 }
 
 const obtainAllDb = () => {
     return mCountry.find().exec();
-  };
+};
 
-const deleteCountry = (parent, args, contextValue, info)=>{
+const deleteCountry = (parent, args, contextValue, info) => {
     const id = args.id
-    console.log(args)
-  return mCountry.findByIdAndDelete(id).exec()
+    // console.log(args)
+    return mCountry.findByIdAndDelete(id).exec()
 }
-  
+
+const modifyCountry = (parent, args, contextValue, info) => {
+    const id = args.id
+    console.log(args);
+    return mCountry.findByIdAndUpdate(id, args)
+}
+
+const findId = (parent, args, contextValue, info) => {
+   return  mCountry.findById(args.id, (err, country) => {
+        if (err) {
+            console.error(`Error al buscar por ID: ${err}`);
+            // Manejar el error adecuadamente
+        } else {
+            if (country) {
+                console.log('País encontrado:', country);
+                // Hacer algo con el país encontrado
+            } else {
+                console.log('No se encontró ningún país con ese ID.');
+                // Manejar la situación en la que no se encuentra el país
+            }
+        }
+    });
+    
+}
+
 
 const Resolvers = {
     Query: {
         findByName: findCountryByName,
         obtainAll: obtainAllCountry,
         obtainAllDb: obtainAllDb,
+        findId: findId,
     },
     Mutation: {
         addCountry: addCountrydb,
-        deleteCountry: deleteCountry
+        deleteCountry: deleteCountry,
+        modifyCountry: modifyCountry
     }
 };
 
