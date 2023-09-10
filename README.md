@@ -12,8 +12,7 @@ Este es un proyecto de desarrollo para el taller de GraphQL. Aquí encontrarás 
 
     * "@apollo/server": "^4.9.3",
     * "graphql": "^16.8.0",
-    * "mongoose": "7.5.0",
-    * "mongoose-unique-validator": "4.0.0"
+    * "mongoose": "7.5.0"
 
 2. Inicia el servidor con el comando nodemon en la terminal
 
