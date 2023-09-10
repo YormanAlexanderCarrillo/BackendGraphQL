@@ -6,7 +6,6 @@ import './drivers/db.js'
 import mCountry from "./models/country.js";
 
 
-// Esquemas
 const typeDefs = `
 type Country {
     _id: String
@@ -20,12 +19,12 @@ type Country {
     alt: String
 }
 type Query {
-    obtainAll: [Country]
+    obtainAllCountryApi: [Country]
     findByIdDb(id: String!): Country
-    obtainAllDb: [Country]
+    obtainAllCountryDb: [Country]
 }
 type Mutation {
-    addCountry(
+    addCountryDb(
         nameCommon: String!, 
         nameOfficial: String!, 
         independent: Boolean!, 
@@ -35,9 +34,9 @@ type Mutation {
         flags: String!,
         alt: String!): Country
 
-    deleteCountry(id: String!): Country
+        deleteCountryDb(id: String!): Country
 
-    modifyCountry(
+        modifyCountryDb(
         id: String!,
         nameCommon: String!,
         nameOfficial: String!, 
@@ -90,14 +89,14 @@ const addCountrydb = async(parent, args, contextValue, info) => {
 }
 
 const obtainAllDb = async () => {
-    return  await mCountry.find()
+    return await mCountry.find()
 };
 
-const deleteCountry = (parent, args, contextValue, info) => {
+const deleteCountry = async (parent, args, contextValue, info) => {
     const id = args.id
     // console.log(args)
-    const response = mCountry.findByIdAndDelete(id).exec()
-    console.log(response);
+    const response = await mCountry.findByIdAndDelete(id).exec()
+   // console.log(response);
     return response
 }
 
@@ -125,14 +124,14 @@ const modifyCountry = async (parent, args, contextValue, info) => {
 
 const Resolvers = {
     Query: {
-        obtainAll: obtainAllCountry,
-        obtainAllDb: obtainAllDb,
+        obtainAllCountryApi: obtainAllCountry,
+        obtainAllCountryDb: obtainAllDb,
         findByIdDb: findByIdDb
     },
     Mutation: {
-        addCountry: addCountrydb,
-        deleteCountry: deleteCountry,
-        modifyCountry: modifyCountry
+        addCountryDb: addCountrydb,
+        deleteCountryDb: deleteCountry,
+        modifyCountryDb: modifyCountry
     }
 };
 
